@@ -115,7 +115,7 @@ module.exports = {
 		data.email = data.email.toLowerCase();
 		const user = await User.findOne({ email: data.email }).lean();
 		if (!user) {
-			return res.status(404).json({
+			return res.status(400).json({
 				status: false,
 				message: res.__("no_user_with_email"),
 			});
@@ -144,7 +144,7 @@ module.exports = {
 			user.email,
 			user.role
 		);
-		return res.json({
+		return res.status(200).send({
 			status: true,
 			message: res.__("success"),
 			data: user_details,

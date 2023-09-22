@@ -21,7 +21,7 @@ app.use(i18n.init);
 app.use(JWTHandler.decodeToken);
 app.use(upload());
 const Logger = require("./utils/LogUtil");
-
+const cors = require('cors');
 mongoose
 	.connect(CONSTANTS.DB_URL, {
     useNewUrlParser: true
@@ -29,19 +29,19 @@ mongoose
 	.then(() => console.log("Database Connected"))
 	.catch((err) => console.log(err));
 
-
-  app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET, POST, OPTIONS, PUT, PATCH, DELETE"
-    );
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization, Accept-Language"
-    );
-    next();
-  });
+  app.use(cors());
+  // app.use((req, res, next) => {
+  //   res.header("Access-Control-Allow-Origin", "*");
+  //   res.header(
+  //     "Access-Control-Allow-Methods",
+  //     "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+  //   );
+  //   res.header(
+  //     "Access-Control-Allow-Headers",
+  //     "Origin, X-Requested-With, Content-Type, Accept, Authorization, Accept-Language"
+  //   );
+  //   next();
+  // });
   
   app.use(
     bodyParser.json({

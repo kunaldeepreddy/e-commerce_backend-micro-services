@@ -250,9 +250,15 @@ module.exports = {
   userPanelLandingPage: async (req, res) => {
     let userConfig = {};
     let homePageProducts = await getHomePageProducts();
-    userConfig["Home Page Products"] = homePageProducts || {};
+    userConfig["homePageProducts"] = homePageProducts || {};
     let carouselPics = await getCarouselPics();
-    userConfig["carousel pics"] = carouselPics || [];
+    userConfig["carouselProducts"] =
+      {
+        name: "Carousel Pics",
+        lampImage:
+          "https://hecto-ecommerce-app-bucket.s3.ap-south-1.amazonaws.com/image+32.png",
+        carouselPics,
+      } || {};
     return res.status(200).send({
       status: true,
       message: res.__("data retrived successfully"),
@@ -274,7 +280,7 @@ async function getCarouselPics() {
           "_id name description display_pic category price offer_price sku_code is_active"
         )
         .exec();
-      resolve(products)
+      resolve(products);
     } catch (error) {
       console.error("Error querying data:", error);
       reject(error);
@@ -324,7 +330,7 @@ async function getHomePageProducts() {
         const matchingProducts = products.filter((product) =>
           product.category.equals(categoryItem.category_id)
         );
-        productListsByCategory[categoryItem.name] = matchingProducts;
+        productListsByCategory[toCamelCase(categoryItem.name)] = matchingProducts;
       });
 
       resolve(productListsByCategory);
@@ -334,14 +340,14 @@ async function getHomePageProducts() {
     }
   });
 }
-// function toCamelCase(str) {
-//   return str
-//     .replace(/[- ]+/g, " ")
-//     .replace(/(?:^\w|[A-Z]|\b\w)/g, (match, index) => {
-//       return index === 0 ? match.toLowerCase() : match.toUpperCase();
-//     })
-//     .replace(/\s/g, "");
-// }
+function toCamelCase(str) {
+  return str
+    .replace(/[- ]+/g, " ")
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, (match, index) => {
+      return index === 0 ? match.toLowerCase() : match.toUpperCase();
+    })
+    .replace(/\s/g, "");
+}
 
 // saveOrUpdateRating: async (req, res) => {
 // 	let user_id = req.decoded_data.user_id;
