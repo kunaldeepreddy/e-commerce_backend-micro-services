@@ -261,7 +261,7 @@ module.exports = {
       } || {};
     return res.status(200).send({
       status: true,
-      message: res.__("data retrived successfully"),
+      message: res.__("data retrieved successfully"),
       data: userConfig,
     });
   },
