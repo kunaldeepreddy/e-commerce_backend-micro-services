@@ -1,0 +1,130 @@
+http:
+  port: 3005
+admin:
+  port: 9876
+  host: localhost
+apiEndpoints:
+  tokenLessUser:
+    host: '*'
+    paths:
+      - '/api/user/login' 
+      - '/api/user/logout'
+      - '/api/user/registerUser' 
+      - '/api/user/forgot-password/reset'
+      - '/api/user/forgot-password'  
+  tokenLessProject:
+    host: '*'
+    paths:
+      - '/api/project/userConfig'
+  userAPI:
+    host: '*'
+    paths: '/api/user/*'
+  projectAPI:
+    host: '*'
+    paths: '/api/project/*'
+serviceEndpoints:
+   userService:
+    url: 'http://localhost:8011'
+   projectService:
+    url: 'http://localhost:8013'
+policies:
+  - basic-auth
+  - cors
+  - jwt
+  - headers
+  - expression
+  - key-auth
+  - log
+  - oauth2
+  - proxy
+  - rate-limit
+pipelines:
+  - name: user
+    apiEndpoints:
+      - userAPI
+    policies:
+      - cors:
+        - action:
+            origin: '*'
+            methods: 'HEAD,PUT,PATCH,POST,DELETE,GET'
+            allowedHeaders: ['Content-Type', 'Origin','Authorization','Access-Control-Allow-Origin','Accept']
+            credentials: true
+      - jwt:
+        - action:
+           secretOrPublicKey: ${SECRET_KEY}
+      - expression:
+        - action:
+            jscode:
+              req.headers.host_url = req.headers.host;
+      - proxy:
+        - action:
+            serviceEndpoint: userService
+            changeOrigin: true
+  - name: tokenLessUser
+    apiEndpoints:
+      - tokenLessUser
+    policies:
+      - log: 
+        - action:   
+            message: ${req.method} ${req.originalUrl} 
+      - cors:
+        - action:
+              origin: '*'
+              methods: 'HEAD,PUT,PATCH,POST,DELETE,GET'
+              allowedHeaders:  ['Content-Type', 'Origin','Authorization','Access-Control-Allow-Origin','Accept']
+              preflightContinue: true
+      - expression:
+        - action:
+            jscode:
+              req.headers.host_url = req.headers.host;
+      - proxy:
+          - action:
+              serviceEndpoint: userService
+              changeOrigin: true
+  - name: project
+    apiEndpoints:
+      - projectAPI
+    policies:   
+      - cors:
+        - action:
+            origin: '*'
+            methods: 'HEAD,PUT,PATCH,POST,DELETE,GET'
+            allowedHeaders:   ['Content-Type', 'Origin','Authorization','Access-Control-Allow-Origin','Accept']
+            credentials: true
+      #- oauth2:
+      - jwt:
+        - action:
+           secretOrPublicKey: ${SECRET_KEY}
+      - log: 
+        - action:   
+            message: ${req.method} ${req.originalUrl}
+      - expression:
+        - action:
+            jscode:
+              req.headers.host_url = req.headers.host;
+      - proxy:
+        - action:
+            serviceEndpoint: projectService
+            changeOrigin: true
+  - name: tokenLessProject
+    apiEndpoints:
+      - tokenLessProject
+    policies:
+      - log: 
+        - action:   
+            message: ${req.method} ${req.originalUrl} 
+      - cors:
+        - action:
+              origin: '*'
+              methods: 'HEAD,PUT,PATCH,POST,DELETE,GET'
+              allowedHeaders:  ['Content-Type', 'Origin','Authorization','Access-Control-Allow-Origin','Accept']
+              preflightContinue: true
+      - expression:
+        - action:
+            jscode:
+              req.headers.host_url = req.headers.host;
+      - proxy:
+          - action:
+              serviceEndpoint: projectService
+              changeOrigin: true
+  
